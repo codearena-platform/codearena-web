@@ -1,0 +1,24 @@
+{
+  "name": "codearena-web",
+  "private": true,
+  "workspaces": [
+    "codearena-arena-studio",
+    "codearena-bot-studio",
+    "codearena-dashboard",
+    "codearena-ui"
+  ],
+  "scripts": {
+    "build": "npm run build -w @codearena/ui && npm run build -w @codearena/arena-studio && npm run build -w codearena-bot-studio && npm run build -w codearena-dashboard",
+    "build:arena": "npm run build -w @codearena/arena-studio",
+    "build:bot": "npm run build -w codearena-bot-studio",
+    "build:dashboard": "npm run build -w codearena-dashboard",
+    "build:ui": "npm run build -w @codearena/ui",
+    "dev:arena": "npm run dev -w @codearena/arena-studio",
+    "dev:bot": "npm run dev -w codearena-bot-studio",
+    "dev:dashboard": "npm run dev -w codearena-dashboard",
+    "dev:all": "npx concurrently -n arena,bot,dash -c cyan,magenta,yellow \"npm run dev:arena\" \"npm run dev:bot\" \"npm run dev:dashboard\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

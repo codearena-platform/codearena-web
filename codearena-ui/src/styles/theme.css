@@ -1,0 +1,33 @@
+:root {
+  --neon-cyan: #00f3ff;
+  --neon-magenta: #ff00ff;
+  --neon-yellow: #f3ff00;
+  --cyber-black: #0d0d0d;
+  --cyber-gray: #1a1a1a;
+  --cyber-blue: #001f3f;
+  
+  --glitch-speed: 0.2s;
+}
+
+body {
+  background-color: var(--cyber-black);
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+}
+
+.cyber-button {
+  background: transparent;
+  border: 1px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+  padding: 0.5rem 1rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.cyber-button:hover {
+  background: var(--neon-cyan);
+  color: var(--cyber-black);
+  box-shadow: 0 0 15px var(--neon-cyan);
+}

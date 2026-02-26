@@ -1,0 +1,29 @@
+
+> @codearena/arena-studio@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.3
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/4) ...
+   Generating static pages (1/4) 
+   Generating static pages (2/4) 
+   Generating static pages (3/4) 
+ ✓ Generating static pages (4/4)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    134 kB          221 kB
+└ ○ /_not-found                          871 B          87.8 kB
++ First Load JS shared by all            87 kB
+  ├ chunks/23-db261fb0c05458b3.js        31.5 kB
+  ├ chunks/fd9d1056-4e1a26e2d413ba3c.js  53.6 kB
+  └ other shared chunks (total)          1.86 kB
+
+
+○  (Static)  prerendered as static content
+
