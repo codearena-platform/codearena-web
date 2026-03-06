@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "exports": {
-        ".": "./src/styles/theme.css",
+        ".": "./src/index.ts",
         "./theme": "./src/styles/theme.css",
         "./Nav": "./src/components/Nav.tsx"
     },

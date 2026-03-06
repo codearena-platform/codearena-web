@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "@codearena/ui/theme";
 import "./globals.css";
-import { Nav } from "@codearena/ui/Nav";
+import { Nav } from "@codearena/ui";
 
 export const metadata: Metadata = {
     title: "CodeArena Arena Studio",

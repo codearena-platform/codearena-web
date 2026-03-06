@@ -46,6 +46,26 @@ export default function Home() {
         input.click();
     }, []);
 
+    const [isGenerating, setIsGenerating] = useState(false);
+    const handleGenerateMaze = useCallback(async () => {
+        setIsGenerating(true);
+        try {
+            const resp = await fetch('/api/generate-maze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ width, height, cellSize: 50 })
+            });
+            const data = await resp.json();
+            if (data.obstacles) {
+                setObstacles(data.obstacles);
+            }
+        } catch (err) {
+            console.error("Maze generation failed", err);
+        } finally {
+            setIsGenerating(false);
+        }
+    }, [width, height]);
+
     return (
         <main className="flex min-h-screen flex-col items-center justify-center bg-[#0d0d0d] p-8">
             <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex mb-8">
@@ -64,6 +84,13 @@ export default function Home() {
                         className="px-4 py-2 border border-magenta-500 text-magenta-500 hover:bg-magenta-500 hover:text-black transition-all uppercase text-xs tracking-widest font-bold"
                     >
                         Export JSON
+                    </button>
+                    <button
+                        disabled={isGenerating}
+                        onClick={handleGenerateMaze}
+                        className={`px-4 py-2 border border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black transition-all uppercase text-xs tracking-widest font-bold ${isGenerating ? 'opacity-50 cursor-wait' : ''}`}
+                    >
+                        {isGenerating ? 'Generating...' : 'Generate Maze'}
                     </button>
                     <button
                         onClick={handleImport}

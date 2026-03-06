@@ -191,8 +191,16 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
-        <div style={{ padding: '5px 15px', borderRadius: '20px', backgroundColor: status === 'Live' ? '#27ae60' : '#c0392b', fontWeight: 'bold' }}>
-          {status} - TICK: {worldState?.tick ?? worldState?.Tick ?? 0}
+        <div className="flex items-center gap-4">
+          <a
+            href="/dashboard/system"
+            className="px-4 py-2 border border-cyan-500/50 text-cyan-400 hover:bg-cyan-400 hover:text-black transition-all text-[10px] font-bold uppercase tracking-[0.2em]"
+          >
+            System Health
+          </a>
+          <div style={{ padding: '5px 15px', borderRadius: '20px', backgroundColor: status === 'Live' ? '#27ae60' : '#c0392b', fontWeight: 'bold' }}>
+            {status} - TICK: {worldState?.tick ?? worldState?.Tick ?? 0}
+          </div>
         </div>
       </header>
 
