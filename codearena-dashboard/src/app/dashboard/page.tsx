@@ -7,6 +7,29 @@ export default function DashboardPage() {
   const [status, setStatus] = useState('Connecting...')
   const [worldState, setWorldState] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
+  const [analytics, setAnalytics] = useState<any>(null)
+
+  // Fetch background analytics periodically from the Node.js Tasklet API
+  useEffect(() => {
+    if (!worldState) return;
+
+    const fetchAnalytics = async () => {
+      try {
+        const resp = await fetch('/api/analytics', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(worldState)
+        });
+        const data = await resp.json();
+        setAnalytics(data);
+      } catch (e) {
+        console.error('Analytics failed', e);
+      }
+    };
+
+    const timer = setTimeout(fetchAnalytics, 2000); // Process every 2 seconds
+    return () => clearTimeout(timer);
+  }, [worldState])
 
   useEffect(() => {
     let ws: WebSocket | null = null
@@ -159,7 +182,15 @@ export default function DashboardPage() {
     <main style={{ padding: '20px 0', minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       {error && <div style={{ color: '#e74c3c', marginBottom: 10 }}>{error}</div>}
       <header style={{ width: '100%', maxWidth: '1200px', display: 'flex', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '1px solid #333', paddingBottom: '10px' }}>
-        <h1 style={{ color: '#00ffff', textShadow: '0 0 10px #00ffff', margin: 0 }}>COMMAND CENTER</h1>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <h1 style={{ color: '#00ffff', textShadow: '0 0 10px #00ffff', margin: 0 }}>COMMAND CENTER</h1>
+          {analytics && (
+            <div style={{ fontSize: '0.7rem', color: '#888', marginTop: '4px' }}>
+              INTENSITY: <span style={{ color: '#27ae60' }}>{analytics.intensityIndex}</span> |
+              AVG HULL: <span style={{ color: '#3498db' }}>{analytics.averageHull}%</span>
+            </div>
+          )}
+        </div>
         <div style={{ padding: '5px 15px', borderRadius: '20px', backgroundColor: status === 'Live' ? '#27ae60' : '#c0392b', fontWeight: 'bold' }}>
           {status} - TICK: {worldState?.tick ?? worldState?.Tick ?? 0}
         </div>
