@@ -8,24 +8,25 @@
     "codearena-ui"
   ],
   "scripts": {
-    "build": "npm run build -w @codearena/ui && npm run build -w @codearena/arena-studio && npm run build -w codearena-bot-studio && npm run build -w codearena-dashboard",
+    "build": "npm run build:ui && npm run build -w @codearena/arena-studio && npm run build -w codearena-bot-studio && npm run build -w codearena-dashboard",
     "build:arena": "npm run build -w @codearena/arena-studio",
     "build:bot": "npm run build -w codearena-bot-studio",
     "build:dashboard": "npm run build -w codearena-dashboard",
     "build:ui": "npm run build -w @codearena/ui",
     "lint": "npm run lint --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "node --test tests",
-    "dev:arena": "npm run dev -w @codearena/arena-studio",
-    "dev:bot": "npm run dev -w codearena-bot-studio",
-    "dev:dashboard": "npm run dev -w codearena-dashboard",
-    "dev:all": "npx concurrently -n arena,bot,dash -c cyan,magenta,yellow \"npm run dev:arena\" \"npm run dev:bot\" \"npm run dev:dashboard\""
+    "typecheck": "npm run build:ui && npm run typecheck --workspaces --if-present",
+    "test": "node --test tests/*.test.mjs",
+    "test:e2e": "node --test tests/e2e/*.e2e.mjs",
+    "dev:arena": "npm run build:ui && npm run dev -w @codearena/arena-studio",
+    "dev:bot": "npm run build:ui && npm run dev -w codearena-bot-studio",
+    "dev:dashboard": "npm run build:ui && npm run dev -w codearena-dashboard",
+    "dev:all": "npm run build:ui && npx concurrently -n arena,bot,dash -c cyan,magenta,yellow \"npm run dev -w @codearena/arena-studio\" \"npm run dev -w codearena-bot-studio\" \"npm run dev -w codearena-dashboard\""
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
+    "concurrently": "8.2.2",
     "typescript": "5.9.3"
   },
   "dependencies": {
-    "three": "^0.183.2"
+    "three": "0.183.2"
   }
 }

@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
+import { normalizeBasePath, withBasePath } from '@codearena/ui'
 import { createAnalyticsPoller } from '../../lib/analyticsPoller'
 import { parseWorldStateMessage, type WorldState } from '../../lib/worldState'
 
@@ -17,6 +19,7 @@ function resolveDashboardWsUrl(): string | null {
 }
 
 const DASHBOARD_WS_URL = resolveDashboardWsUrl()
+const BASE_PATH = normalizeBasePath(process.env.NEXT_PUBLIC_BASE_PATH)
 
 interface AnalyticsSummary {
   intensityIndex: number
@@ -46,7 +49,6 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(DASHBOARD_WS_URL ? null : 'Invalid WebSocket URL')
   const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null)
   const worldStateRef = useRef<WorldState | null>(null)
-  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''
 
   // The interval is created once on mount. Incoming WebSocket ticks only swap
   // the snapshot in worldStateRef; they never cancel or reschedule this timer.
@@ -54,7 +56,7 @@ export default function DashboardPage() {
     const poller = createAnalyticsPoller({
       getState: () => worldStateRef.current,
       fetchAnalytics: async (state) => {
-        const response = await fetch(`${basePath}/api/analytics`, {
+        const response = await fetch(withBasePath('/api/analytics', BASE_PATH), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(state),
@@ -68,7 +70,7 @@ export default function DashboardPage() {
     })
     poller.start()
     return () => poller.stop()
-  }, [basePath])
+  }, [])
 
   useEffect(() => {
     if (!DASHBOARD_WS_URL) return
@@ -207,12 +209,12 @@ export default function DashboardPage() {
           )}
         </div>
         <div className="flex items-center gap-4">
-          <a
+          <Link
             href="/dashboard/system"
             className="px-4 py-2 border border-cyan-500/50 text-cyan-400 hover:bg-cyan-400 hover:text-black transition-all text-[10px] font-bold uppercase tracking-[0.2em]"
           >
             System Health
-          </a>
+          </Link>
           <div style={{ padding: '5px 15px', borderRadius: '20px', backgroundColor: status === 'Live' ? '#27ae60' : '#c0392b', fontWeight: 'bold' }}>
             {status} - TICK: {worldState?.tick ?? 0}
           </div>

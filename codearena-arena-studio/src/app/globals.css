@@ -1,3 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+    --color-cyan-400: #00f3ff;
+    --color-cyan-500: #00d8e2;
+    --color-cyan-900: #003b3e;
+    --color-magenta-500: #ff00ff;
+}

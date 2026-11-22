@@ -1,39 +1,34 @@
-import type { Workspace } from 'blockly';
-import { javascriptGenerator } from 'blockly/javascript';
+import type { Block, Workspace } from "blockly";
+import { javascriptGenerator, Order, type JavascriptGenerator } from "blockly/javascript";
+import { wrapBotActions } from "@/lib/botProgram";
 
 export const generator = javascriptGenerator;
 
 /**
  * Generate a complete bot program. Blocks only produce action statements, so
- * wrap them in the onTick handler expected by the validator and the SDK.
+ * the shared contract wrapper puts them inside the onTick handler expected by
+ * the validator and the SDK.
  */
 export function generateBotCode(workspace: Workspace): string {
-    const body = generator.workspaceToCode(workspace).trimEnd();
-    if (!body) return '';
-
-    const indented = body
-        .split('\n')
-        .map((line) => `  ${line}`)
-        .join('\n');
-    return `onTick((bot) => {\n${indented}\n});\n`;
+  return wrapBotActions(generator.workspaceToCode(workspace));
 }
 
-generator.forBlock['bot_ahead'] = function (block: any, generator: any) {
-    const distance = generator.valueToCode(block, 'DISTANCE', generator.ORDER_ATOMIC) || '0';
-    return `bot.ahead(${distance});\n`;
+generator.forBlock["bot_ahead"] = function (block: Block, codeGenerator: JavascriptGenerator) {
+  const distance = codeGenerator.valueToCode(block, "DISTANCE", Order.ATOMIC) || "0";
+  return `bot.ahead(${distance});\n`;
 };
 
-generator.forBlock['bot_turn'] = function (block: any, generator: any) {
-    const degrees = generator.valueToCode(block, 'DEGREES', generator.ORDER_ATOMIC) || '0';
-    return `bot.turn(${degrees});\n`;
+generator.forBlock["bot_turn"] = function (block: Block, codeGenerator: JavascriptGenerator) {
+  const degrees = codeGenerator.valueToCode(block, "DEGREES", Order.ATOMIC) || "0";
+  return `bot.turn(${degrees});\n`;
 };
 
-generator.forBlock['bot_fire'] = function (block: any, generator: any) {
-    const power = generator.valueToCode(block, 'POWER', generator.ORDER_ATOMIC) || '1.0';
-    return `bot.fire(${power});\n`;
+generator.forBlock["bot_fire"] = function (block: Block, codeGenerator: JavascriptGenerator) {
+  const power = codeGenerator.valueToCode(block, "POWER", Order.ATOMIC) || "1.0";
+  return `bot.fire(${power});\n`;
 };
 
-generator.forBlock['bot_activate_power'] = function (block: any) {
-    const power = block.getFieldValue('POWER');
-    return `bot.activatePower(PowerType.${power});\n`;
+generator.forBlock["bot_activate_power"] = function (block: Block) {
+  const power = block.getFieldValue("POWER") ?? "SHIELD";
+  return `bot.activatePower(PowerType.${power});\n`;
 };
