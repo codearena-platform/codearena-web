@@ -19,13 +19,12 @@ export function useMatchStream(matchId: string) {
     }, []);
 
     useEffect(() => {
-        if (!matchId) {
-            setStatus('idle');
-            setState(null);
-            return;
-        }
+        if (!matchId) return;
 
-        setStatus('connecting');
+        let active = true;
+        // Defer so subscribing to the external stream is not followed by a
+        // synchronous cascading render.
+        queueMicrotask(() => { if (active) setStatus('connecting'); });
         const client = createRealtimeClient();
         clientRef.current = client;
 
@@ -37,11 +36,12 @@ export function useMatchStream(matchId: string) {
         });
 
         return () => {
+            active = false;
             client.disconnect();
             clientRef.current = null;
-            setStatus('disconnected');
         };
     }, [matchId, handleMessage]);
 
-    return { state, status };
+    // Derive the idle values directly instead of setting state in an effect.
+    return matchId ? { state, status } : { state: null, status: 'idle' as StreamStatus };
 }

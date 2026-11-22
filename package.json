@@ -21,7 +21,8 @@
     "dev:all": "npx concurrently -n arena,bot,dash -c cyan,magenta,yellow \"npm run dev:arena\" \"npm run dev:bot\" \"npm run dev:dashboard\""
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "typescript": "5.9.3"
   },
   "dependencies": {
     "three": "^0.183.2"

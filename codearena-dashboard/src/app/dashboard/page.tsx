@@ -2,11 +2,25 @@
 
 import { useEffect, useRef, useState } from 'react'
 
+function resolveDashboardWsUrl(): string | null {
+  let url = process.env.NODE_ENV === 'production' ? 'wss://localhost:8080/ws' : 'ws://localhost:8080/ws'
+  if (process.env.NEXT_PUBLIC_DASHBOARD_WS_URL) url = process.env.NEXT_PUBLIC_DASHBOARD_WS_URL
+  else if (process.env.NEXT_PUBLIC_WS_URL) url = String(process.env.NEXT_PUBLIC_WS_URL).replace(/^http/, 'ws') + '/ws'
+  try {
+    new URL(url)
+    return url
+  } catch {
+    return null
+  }
+}
+
+const DASHBOARD_WS_URL = resolveDashboardWsUrl()
+
 export default function DashboardPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [status, setStatus] = useState('Connecting...')
   const [worldState, setWorldState] = useState<any>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(DASHBOARD_WS_URL ? null : 'Invalid WebSocket URL')
   const [analytics, setAnalytics] = useState<any>(null)
   const worldStateRef = useRef<any>(null)
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''
@@ -32,17 +46,9 @@ export default function DashboardPage() {
   }, [basePath])
 
   useEffect(() => {
-    let ws: WebSocket | null = null
-    try {
-      let url = process.env.NODE_ENV === 'production' ? 'wss://localhost:8080/ws' : 'ws://localhost:8080/ws'
-      if (process.env.NEXT_PUBLIC_DASHBOARD_WS_URL) url = process.env.NEXT_PUBLIC_DASHBOARD_WS_URL
-      else if (process.env.NEXT_PUBLIC_WS_URL) url = String(process.env.NEXT_PUBLIC_WS_URL).replace(/^http/, 'ws') + '/ws'
-      ws = new WebSocket(url)
-    } catch (e) {
-      setError('Invalid WebSocket URL')
-      return
-    }
+    if (!DASHBOARD_WS_URL) return
 
+    const ws = new WebSocket(DASHBOARD_WS_URL)
     ws.onopen = () => { setStatus('Live'); setError(null) }
     ws.onmessage = (event) => {
       try {
@@ -55,7 +61,7 @@ export default function DashboardPage() {
     }
     ws.onclose = () => setStatus('Disconnected')
     ws.onerror = () => { setStatus('Error'); setError('Connection failed') }
-    return () => { ws?.close() }
+    return () => { ws.close() }
   }, [])
 
   useEffect(() => {
