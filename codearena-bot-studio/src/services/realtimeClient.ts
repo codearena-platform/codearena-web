@@ -10,10 +10,10 @@ export interface RealtimeClientCallbacks {
 const HEARTBEAT_INTERVAL_MS = 30000;
 
 function getWsBaseUrl(): string {
-    if (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_WS_URL) {
+    if (process.env.NEXT_PUBLIC_WS_URL) {
         return process.env.NEXT_PUBLIC_WS_URL;
     }
-    return 'ws://localhost:8080';
+    return process.env.NODE_ENV === 'production' ? 'wss://localhost:8080' : 'ws://localhost:8080';
 }
 
 export function createRealtimeClient(baseUrl?: string) {
@@ -23,7 +23,8 @@ export function createRealtimeClient(baseUrl?: string) {
 
     function buildUrl(matchId: string): string {
         const url = new URL(resolved);
-        url.pathname = `/ws/match/${matchId}`;
+        const basePath = url.pathname.replace(/\/$/, '');
+        url.pathname = `${basePath}/ws/match/${encodeURIComponent(matchId)}`;
         return url.toString();
     }
 

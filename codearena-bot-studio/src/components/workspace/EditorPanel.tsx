@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 
 const BlocklyComponent = dynamic(
@@ -12,27 +12,69 @@ interface EditorPanelProps {
     onCodeChange?: (code: string) => void;
 }
 
+interface ValidationResult {
+    valid: boolean;
+    errors: string[];
+    warnings: string[];
+    score: number;
+    error?: string;
+}
+
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
 export function EditorPanel({ onCodeChange }: EditorPanelProps) {
-    const [validation, setValidation] = useState<any>(null);
+    const [validation, setValidation] = useState<ValidationResult | null>(null);
     const [isValidating, setIsValidating] = useState(false);
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const abortRef = useRef<AbortController | null>(null);
 
-    const handleInternalCodeChange = useCallback(async (code: string) => {
-        setIsValidating(true);
-        try {
-            const resp = await fetch('/api/validate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code })
-            });
-            const result = await resp.json();
-            setValidation(result);
-        } catch (err) {
-            console.error('Validation failed', err);
-        } finally {
-            setIsValidating(false);
-        }
+    useEffect(() => () => {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        abortRef.current?.abort();
+    }, []);
 
-        if (onCodeChange) onCodeChange(code);
+    const handleInternalCodeChange = useCallback((code: string) => {
+        onCodeChange?.(code);
+
+        // Blockly fires on every keystroke: debounce and cancel in-flight requests.
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        abortRef.current?.abort();
+
+        debounceRef.current = setTimeout(async () => {
+            const controller = new AbortController();
+            abortRef.current = controller;
+            setIsValidating(true);
+            try {
+                const resp = await fetch(`${BASE_PATH}/api/validate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code }),
+                    signal: controller.signal,
+                });
+                const data: ValidationResult = await resp.json();
+                if (!resp.ok || typeof data?.valid !== 'boolean' || !Array.isArray(data.errors)) {
+                    setValidation({
+                        valid: false,
+                        errors: [data?.error || `Validation failed (${resp.status})`],
+                        warnings: [],
+                        score: 0,
+                    });
+                    return;
+                }
+                setValidation(data);
+            } catch (err) {
+                if ((err as Error).name !== 'AbortError') {
+                    setValidation({
+                        valid: false,
+                        errors: ['Validation service is unavailable'],
+                        warnings: [],
+                        score: 0,
+                    });
+                }
+            } finally {
+                if (abortRef.current === controller) setIsValidating(false);
+            }
+        }, 300);
     }, [onCodeChange]);
 
     return (

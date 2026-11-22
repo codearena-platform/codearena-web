@@ -13,6 +13,8 @@
     "build:bot": "npm run build -w codearena-bot-studio",
     "build:dashboard": "npm run build -w codearena-dashboard",
     "build:ui": "npm run build -w @codearena/ui",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
     "dev:arena": "npm run dev -w @codearena/arena-studio",
     "dev:bot": "npm run dev -w codearena-bot-studio",
     "dev:dashboard": "npm run dev -w codearena-dashboard",

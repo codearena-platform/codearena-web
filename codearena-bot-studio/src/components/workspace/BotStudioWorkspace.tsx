@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import nextDynamic from 'next/dynamic';
-import { useMatchStream } from '@/hooks/useMatchStream';
+import { useMatchStream, type StreamStatus } from '@/hooks/useMatchStream';
 import { EditorPanel } from './EditorPanel';
 import { ConsolePanel } from './ConsolePanel';
 import type { LogEntry } from './ConsolePanel';
@@ -13,7 +13,7 @@ const Arena3DDynamic = nextDynamic(
     { ssr: false, loading: () => <div className="w-full h-[500px] bg-black/50 animate-pulse rounded-xl border border-white/10" /> }
 );
 
-const STATUS_LABELS: Record<string, string> = {
+const STATUS_LABELS: Record<StreamStatus, string> = {
     idle: 'Idle',
     connecting: 'Connecting...',
     connected: 'Connected',
@@ -21,7 +21,8 @@ const STATUS_LABELS: Record<string, string> = {
     error: 'Error'
 };
 
-const DEFAULT_MATCH_ID = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_MATCH_ID) || 'demo-match-001';
+// Static env access is inlined by Next at build time for browser bundles.
+const DEFAULT_MATCH_ID = process.env.NEXT_PUBLIC_MATCH_ID || 'demo-match-001';
 
 export function BotStudioWorkspace() {
     const { state, status } = useMatchStream(DEFAULT_MATCH_ID);
