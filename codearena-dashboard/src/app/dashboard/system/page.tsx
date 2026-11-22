@@ -11,7 +11,7 @@ export default function SystemPage() {
                     <h1 className="text-3xl font-black text-[#00ffff] tracking-tighter uppercase italic">
                         Telemetry <span className="text-white">Dashboard</span>
                     </h1>
-                    <p className="text-[#666] text-xs uppercase tracking-widest mt-1">Real-time OpenTelemetry span monitoring</p>
+                    <p className="text-[#666] text-xs uppercase tracking-widest mt-1">Demo telemetry - simulated data, no live collector</p>
                 </div>
                 <Link
                     href="/dashboard"
@@ -28,7 +28,8 @@ export default function SystemPage() {
 
                 <div className="space-y-6">
                     <div className="bg-[#111] border border-[#333] p-6 rounded-lg">
-                        <h4 className="text-[#fff] text-xs font-bold uppercase tracking-widest mb-4">Service Health</h4>
+                        <h4 className="text-[#fff] text-xs font-bold uppercase tracking-widest mb-4">Service Health (demo data)</h4>
+                        <p className="text-[#666] text-[10px] mb-4">Static example values - not measured from running services.</p>
                         <div className="space-y-3">
                             {[
                                 { name: "Arena Engine", latency: "12ms", health: 98 },
@@ -48,14 +49,14 @@ export default function SystemPage() {
                     </div>
 
                     <div className="bg-cyan-500/5 border border-cyan-500/20 p-6 rounded-lg">
-                        <h4 className="text-cyan-400 text-xs font-bold uppercase tracking-widest mb-4">OTel Status</h4>
+                        <h4 className="text-cyan-400 text-xs font-bold uppercase tracking-widest mb-4">OTel Status (demo)</h4>
                         <p className="text-[#777] text-[11px] leading-relaxed">
-                            The distributed tracing system is currently collecting spans from all Go and Node.js microservices.
-                            All timing data is calculated using high-resolution monotonic clocks.
+                            This page is a UI preview. No OpenTelemetry collector is connected, and every value shown here
+                            is simulated or static example data. Connect a real collector before treating any number as telemetry.
                         </p>
                         <div className="mt-4 flex items-center gap-2">
-                            <div className="animate-pulse w-2 h-2 rounded-full bg-cyan-400"></div>
-                            <span className="text-cyan-400 text-[10px] uppercase font-bold">Collector: Active</span>
+                            <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                            <span className="text-yellow-400 text-[10px] uppercase font-bold">Collector: not connected (demo)</span>
                         </div>
                     </div>
                 </div>

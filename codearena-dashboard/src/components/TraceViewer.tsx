@@ -53,12 +53,17 @@ export function TraceViewer() {
 
     return (
         <div className="w-full bg-[#0a0a0a] border border-[#333] rounded-lg p-6 font-mono text-sm shadow-2xl">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-2">
                 <h3 className="text-[#00ffff] font-black tracking-widest uppercase">System Distributed Tracing</h3>
                 <div className="flex gap-2">
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500"></span> Live</span>
+                    <span className="flex items-center gap-1 px-2 py-1 border border-yellow-500/50 text-yellow-400 text-[10px] font-bold uppercase">
+                        Demo data - simulated
+                    </span>
                 </div>
             </div>
+            <p className="text-[#888] text-[10px] mb-6 uppercase tracking-widest">
+                No collector connected. Spans below are generated locally for UI demonstration only.
+            </p>
 
             <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                 {traces.map((trace) => (

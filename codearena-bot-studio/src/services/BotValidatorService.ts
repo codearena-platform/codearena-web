@@ -40,11 +40,8 @@ export class BotValidatorService {
                 score -= 30;
             }
 
-            // Simulate heavy processing (e.g. 50ms pulse)
-            const start = Date.now();
-            while (Date.now() - start < 50) {
-                // Busy wait simulation
-            }
+            // No artificial busy-wait: an unauthenticated caller could otherwise
+            // saturate a worker thread for the whole delay on every request.
 
             return {
                 valid: errors.length === 0,

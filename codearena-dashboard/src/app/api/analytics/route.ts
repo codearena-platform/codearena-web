@@ -1,19 +1,14 @@
-import { NextResponse } from 'next/server';
-import { AnalyticsService } from '@/services/AnalyticsService';
+import { createRateLimiter, handlePost, parseAnalyticsRequest } from '../../../lib/apiSecurity'
+import { AnalyticsService } from '../../../services/AnalyticsService'
 
-/**
- * API Route to process world state analytics using Node.js worker threads.
- * This demonstrates the integration of @wendelmax/tasklets in the dashboard backend.
- */
-export async function POST(request: Request) {
-    try {
-        const body = await request.json();
+const limiter = createRateLimiter(60, 60_000)
 
-        // Execute heavy processing in a background tasklet
-        const summary = await AnalyticsService.summarizeState(body);
-
-        return NextResponse.json(summary);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+/** POST /api/analytics - bounded world snapshots behind a per-IP limit. */
+export function POST(request: Request): Promise<Response> {
+  return handlePost(request, {
+    limiter,
+    maxBodyBytes: 256 * 1024,
+    parse: parseAnalyticsRequest,
+    run: (worldState) => AnalyticsService.summarizeState(worldState),
+  })
 }
