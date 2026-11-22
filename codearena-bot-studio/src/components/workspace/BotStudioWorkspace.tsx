@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo } from 'react';
 import nextDynamic from 'next/dynamic';
 import { useMatchStream, type StreamStatus } from '@/hooks/useMatchStream';
 import { EditorPanel } from './EditorPanel';
+import { EditorErrorBoundary } from './EditorErrorBoundary';
 import { ConsolePanel } from './ConsolePanel';
 import type { LogEntry } from './ConsolePanel';
 import { StatsPanel } from './StatsPanel';
@@ -51,7 +52,9 @@ export function BotStudioWorkspace() {
                 </section>
             </div>
             <div className="flex flex-col gap-4">
-                <EditorPanel onCodeChange={handleCodeChange} />
+                <EditorErrorBoundary>
+                    <EditorPanel onCodeChange={handleCodeChange} />
+                </EditorErrorBoundary>
                 <ConsolePanel logs={logs} connectionStatus={connectionLabel} />
                 <StatsPanel state={state} status={connectionLabel} />
             </div>

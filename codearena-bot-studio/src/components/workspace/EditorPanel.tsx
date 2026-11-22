@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { normalizeBasePath, withBasePath } from '@codearena/ui';
+import { normalizeValidationResponse, type ValidationResult } from '@/lib/validationResponse';
 
 const BlocklyComponent = dynamic(
     () => import('@/components/blockly/BlocklyComponent').then((m) => m.default),
@@ -12,15 +14,8 @@ interface EditorPanelProps {
     onCodeChange?: (code: string) => void;
 }
 
-interface ValidationResult {
-    valid: boolean;
-    errors: string[];
-    warnings: string[];
-    score: number;
-    error?: string;
-}
-
-const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || '';
+const BASE_PATH = normalizeBasePath(process.env.NEXT_PUBLIC_BASE_PATH);
+const DEBOUNCE_MS = 300;
 
 export function EditorPanel({ onCodeChange }: EditorPanelProps) {
     const [validation, setValidation] = useState<ValidationResult | null>(null);
@@ -45,36 +40,22 @@ export function EditorPanel({ onCodeChange }: EditorPanelProps) {
             abortRef.current = controller;
             setIsValidating(true);
             try {
-                const resp = await fetch(`${BASE_PATH}/api/validate`, {
+                const resp = await fetch(withBasePath('/api/validate', BASE_PATH), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ code }),
                     signal: controller.signal,
                 });
-                const data: ValidationResult = await resp.json();
-                if (!resp.ok || typeof data?.valid !== 'boolean' || !Array.isArray(data.errors)) {
-                    setValidation({
-                        valid: false,
-                        errors: [data?.error || `Validation failed (${resp.status})`],
-                        warnings: [],
-                        score: 0,
-                    });
-                    return;
-                }
-                setValidation(data);
+                const payload: unknown = await resp.json();
+                setValidation(normalizeValidationResponse(resp.status, payload));
             } catch (err) {
                 if ((err as Error).name !== 'AbortError') {
-                    setValidation({
-                        valid: false,
-                        errors: ['Validation service is unavailable'],
-                        warnings: [],
-                        score: 0,
-                    });
+                    setValidation(normalizeValidationResponse(0, null));
                 }
             } finally {
                 if (abortRef.current === controller) setIsValidating(false);
             }
-        }, 300);
+        }, DEBOUNCE_MS);
     }, [onCodeChange]);
 
     return (
@@ -93,11 +74,18 @@ export function EditorPanel({ onCodeChange }: EditorPanelProps) {
                 <BlocklyComponent onCodeChange={handleInternalCodeChange} />
             </div>
 
-            {validation && validation.errors.length > 0 && (
-                <div className="mt-2 p-2 bg-red-500/10 border border-red-500/20 rounded text-xs text-red-400">
-                    {validation.errors[0]}
-                </div>
-            )}
+            <div aria-live="polite">
+                {validation?.errors.map((message, index) => (
+                    <p key={`error-${index}`} className="mt-2 p-2 bg-red-500/10 border border-red-500/20 rounded text-xs text-red-400">
+                        {message}
+                    </p>
+                ))}
+                {validation?.warnings.map((message, index) => (
+                    <p key={`warning-${index}`} className="mt-2 p-2 bg-amber-500/10 border border-amber-500/20 rounded text-xs text-amber-300">
+                        {message}
+                    </p>
+                ))}
+            </div>
         </div>
     );
 }

@@ -1,10 +1,14 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { normalizeBasePath, withBasePath } from "@codearena/ui";
 import ArenaCanvas, { type ObstacleData, type ArenaConfig } from "../components/arena/ArenaCanvas";
+
+const BASE_PATH = normalizeBasePath(process.env.NEXT_PUBLIC_BASE_PATH);
 
 export default function Home() {
     const [obstacles, setObstacles] = useState<ObstacleData[]>([]);
+    const [mazeError, setMazeError] = useState<string | null>(null);
     const width = 800;
     const height = 600;
 
@@ -49,18 +53,23 @@ export default function Home() {
     const [isGenerating, setIsGenerating] = useState(false);
     const handleGenerateMaze = useCallback(async () => {
         setIsGenerating(true);
+        setMazeError(null);
         try {
-            const resp = await fetch('/api/generate-maze', {
+            const resp = await fetch(withBasePath('/api/generate-maze', BASE_PATH), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ width, height, cellSize: 50 })
             });
-            const data = await resp.json();
-            if (data.obstacles) {
-                setObstacles(data.obstacles);
+            const data: unknown = await resp.json();
+            const generated = data && typeof data === 'object' && 'obstacles' in data ? data.obstacles : null;
+            if (!resp.ok || !Array.isArray(generated)) {
+                setMazeError('Maze service returned an invalid response');
+                return;
             }
+            setObstacles(generated as ObstacleData[]);
         } catch (err) {
             console.error("Maze generation failed", err);
+            setMazeError('Maze service is unavailable');
         } finally {
             setIsGenerating(false);
         }
@@ -111,6 +120,9 @@ export default function Home() {
                 <p className="text-cyan-900 text-[10px] uppercase tracking-[0.3em] font-bold text-center">
                     Click: add obstacle | Right-click: remove obstacle | Deterministic Physics v1
                 </p>
+                {mazeError && (
+                    <p role="alert" className="text-center text-xs text-red-400">{mazeError}</p>
+                )}
             </div>
         </main>
     );

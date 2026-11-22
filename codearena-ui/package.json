@@ -1,16 +1,41 @@
 {
-    "name": "@codearena/ui",
-    "version": "0.1.0",
-    "private": true,
-    "exports": {
-        ".": "./src/index.ts",
-        "./theme": "./src/styles/theme.css",
-        "./Nav": "./src/components/Nav.tsx"
+  "name": "@codearena/ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist",
+    "src/styles"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
-    "scripts": {
-        "build": "npm --version"
+    "./Nav": {
+      "types": "./dist/components/Nav.d.ts",
+      "default": "./dist/components/Nav.js"
     },
-    "peerDependencies": {
-        "react": "latest"
-    }
+    "./theme": "./src/styles/theme.css"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "next": "16.4.6",
+    "react": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.1.6",
+    "typescript": "5.9.3"
+  }
 }
