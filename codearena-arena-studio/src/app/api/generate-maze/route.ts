@@ -1,18 +1,14 @@
-import { NextResponse } from 'next/server';
-import { MazeService } from '@/services/MazeService';
+import { createRateLimiter, handlePost, parseMazeRequest } from '../../../lib/apiSecurity'
+import { MazeService } from '../../../services/MazeService'
 
-/**
- * API Route to generate procedural arenas using worker threads.
- */
-export async function POST(request: Request) {
-    try {
-        const { width, height, cellSize } = await request.json();
+const limiter = createRateLimiter(20, 60_000)
 
-        // Background computation via Tasklets
-        const maze = await MazeService.generate(width, height, cellSize || 60);
-
-        return NextResponse.json(maze);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+/** POST /api/generate-maze - bounded grid generation behind a per-IP limit. */
+export function POST(request: Request): Promise<Response> {
+  return handlePost(request, {
+    limiter,
+    maxBodyBytes: 4 * 1024,
+    parse: parseMazeRequest,
+    run: ({ width, height, cellSize }) => MazeService.generate(width, height, cellSize),
+  })
 }

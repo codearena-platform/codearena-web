@@ -1,16 +1,14 @@
-import { NextResponse } from 'next/server';
-import { BotValidatorService } from '@/services/BotValidatorService';
+import { createRateLimiter, handlePost, parseValidateRequest } from '../../../lib/apiSecurity'
+import { BotValidatorService } from '../../../services/BotValidatorService'
 
-/**
- * API Route to validate bot code using Node.js worker threads via @wendelmax/tasklets.
- * This keeps the heavy analysis off the main thread and the browser bundle.
- */
-export async function POST(request: Request) {
-    try {
-        const { code } = await request.json();
-        const result = await BotValidatorService.validateCode(code);
-        return NextResponse.json(result);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+const limiter = createRateLimiter(30, 60_000)
+
+/** POST /api/validate - bounded source validation behind a per-IP limit. */
+export function POST(request: Request): Promise<Response> {
+  return handlePost(request, {
+    limiter,
+    maxBodyBytes: 128 * 1024,
+    parse: parseValidateRequest,
+    run: (code) => BotValidatorService.validateCode(code),
+  })
 }

@@ -40,12 +40,8 @@ export class AnalyticsService {
 
             const avgHull = bots.length > 0 ? totalHull / bots.length : 0;
 
-            // Artificial "Intensity" calculation (CPU intensive simulation slice)
-            let intensity = (bullets.length * 2) + bots.length;
-            const iterations = 10000;
-            for (let i = 0; i < iterations; i++) {
-                intensity = Math.sqrt(intensity * 1.0001 + Math.random() * 0.0001);
-            }
+            // Deterministic heuristic without an artificial CPU-burning loop.
+            const intensity = Math.min(100, (bullets.length * 2) + bots.length);
 
             return {
                 totalBots: bots.length,
