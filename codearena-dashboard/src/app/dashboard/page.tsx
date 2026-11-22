@@ -2,53 +2,58 @@
 
 import { useEffect, useRef, useState } from 'react'
 
+function resolveDashboardWsUrl(): string | null {
+  let url = process.env.NODE_ENV === 'production' ? 'wss://localhost:8080/ws' : 'ws://localhost:8080/ws'
+  if (process.env.NEXT_PUBLIC_DASHBOARD_WS_URL) url = process.env.NEXT_PUBLIC_DASHBOARD_WS_URL
+  else if (process.env.NEXT_PUBLIC_WS_URL) url = String(process.env.NEXT_PUBLIC_WS_URL).replace(/^http/, 'ws') + '/ws'
+  try {
+    new URL(url)
+    return url
+  } catch {
+    return null
+  }
+}
+
+const DASHBOARD_WS_URL = resolveDashboardWsUrl()
+
 export default function DashboardPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [status, setStatus] = useState('Connecting...')
   const [worldState, setWorldState] = useState<any>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(DASHBOARD_WS_URL ? null : 'Invalid WebSocket URL')
   const [analytics, setAnalytics] = useState<any>(null)
+  const worldStateRef = useRef<any>(null)
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''
 
-  // Fetch background analytics periodically from the Node.js Tasklet API
+  // Poll analytics independently of WebSocket messages. A setTimeout keyed on
+  // worldState was cancelled by every tick, so at realistic rates it never ran.
   useEffect(() => {
-    if (!worldState) return;
-
-    const fetchAnalytics = async () => {
+    const timer = setInterval(async () => {
+      const state = worldStateRef.current
+      if (!state) return
       try {
-        const resp = await fetch('/api/analytics', {
+        const resp = await fetch(`${basePath}/api/analytics`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(worldState)
+          body: JSON.stringify(state)
         });
-        const data = await resp.json();
-        setAnalytics(data);
+        if (resp.ok) setAnalytics(await resp.json());
       } catch (e) {
         console.error('Analytics failed', e);
       }
-    };
-
-    const timer = setTimeout(fetchAnalytics, 2000); // Process every 2 seconds
-    return () => clearTimeout(timer);
-  }, [worldState])
+    }, 2000);
+    return () => clearInterval(timer);
+  }, [basePath])
 
   useEffect(() => {
-    let ws: WebSocket | null = null
-    try {
-      let url = 'ws://localhost:8080/ws'
-      if (typeof process !== 'undefined') {
-        if (process.env.NEXT_PUBLIC_DASHBOARD_WS_URL) url = process.env.NEXT_PUBLIC_DASHBOARD_WS_URL
-        else if (process.env.NEXT_PUBLIC_WS_URL) url = String(process.env.NEXT_PUBLIC_WS_URL).replace(/^http/, 'ws') + '/ws'
-      }
-      ws = new WebSocket(url)
-    } catch (e) {
-      setError('Invalid WebSocket URL')
-      return
-    }
+    if (!DASHBOARD_WS_URL) return
 
+    const ws = new WebSocket(DASHBOARD_WS_URL)
     ws.onopen = () => { setStatus('Live'); setError(null) }
     ws.onmessage = (event) => {
       try {
         const state = JSON.parse(event.data)
+        worldStateRef.current = state
         setWorldState(state)
       } catch (e) {
         setError('Invalid JSON received')
@@ -56,7 +61,7 @@ export default function DashboardPage() {
     }
     ws.onclose = () => setStatus('Disconnected')
     ws.onerror = () => { setStatus('Error'); setError('Connection failed') }
-    return () => { ws?.close() }
+    return () => { ws.close() }
   }, [])
 
   useEffect(() => {

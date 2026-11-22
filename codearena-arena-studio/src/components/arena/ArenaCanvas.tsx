@@ -28,7 +28,9 @@ export default function ArenaCanvas({ width = 800, height = 600, obstacles, onOb
     const sceneRef = useRef<THREE.Scene | null>(null);
     const obsMeshesRef = useRef<Map<string, THREE.Mesh>>(new Map());
     const obstaclesRef = useRef(obstacles);
-    obstaclesRef.current = obstacles;
+    useEffect(() => {
+        obstaclesRef.current = obstacles;
+    }, [obstacles]);
 
     useEffect(() => {
         if (!containerRef.current) return;

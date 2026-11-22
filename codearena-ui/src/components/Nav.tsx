@@ -6,15 +6,23 @@ const links: { href: string; label: string; key: "arena" | "bot" | "dashboard" }
   { href: "/dashboard", label: "Dashboard", key: "dashboard" },
 ];
 
+// Next.js only inlines statically written process.env members in browser bundles.
+const APP_URLS = {
+  arena: process.env.NEXT_PUBLIC_ARENA_URL,
+  bot: process.env.NEXT_PUBLIC_BOT_URL,
+  dashboard: process.env.NEXT_PUBLIC_DASHBOARD_URL,
+  platform: process.env.NEXT_PUBLIC_PLATFORM_URL,
+};
+
 function getLink(key: "arena" | "bot" | "dashboard"): string {
-  const url = (typeof process !== "undefined" && process.env[`NEXT_PUBLIC_${key.toUpperCase()}_URL` as keyof NodeJS.ProcessEnv]) as string | undefined;
+  const url = APP_URLS[key];
   if (url) return url;
-  const base = (typeof process !== "undefined" && process.env.NEXT_PUBLIC_PLATFORM_URL) || "";
+  const base = APP_URLS.platform || "";
   return base ? `${String(base).replace(/\/$/, "")}/${key}` : `/${key}`;
 }
 
 export function Nav({ current }: { current?: "arena" | "bot" | "dashboard" }) {
-  const homeHref = process.env.NEXT_PUBLIC_PLATFORM_URL || "/";
+  const homeHref = APP_URLS.platform || "/";
 
   return (
     <nav className="flex gap-4 items-center border-b border-white/10 pb-4 mb-6">

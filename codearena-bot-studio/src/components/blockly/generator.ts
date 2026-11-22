@@ -1,6 +1,22 @@
+import type { Workspace } from 'blockly';
 import { javascriptGenerator } from 'blockly/javascript';
 
 export const generator = javascriptGenerator;
+
+/**
+ * Generate a complete bot program. Blocks only produce action statements, so
+ * wrap them in the onTick handler expected by the validator and the SDK.
+ */
+export function generateBotCode(workspace: Workspace): string {
+    const body = generator.workspaceToCode(workspace).trimEnd();
+    if (!body) return '';
+
+    const indented = body
+        .split('\n')
+        .map((line) => `  ${line}`)
+        .join('\n');
+    return `onTick((bot) => {\n${indented}\n});\n`;
+}
 
 generator.forBlock['bot_ahead'] = function (block: any, generator: any) {
     const distance = generator.valueToCode(block, 'DISTANCE', generator.ORDER_ATOMIC) || '0';

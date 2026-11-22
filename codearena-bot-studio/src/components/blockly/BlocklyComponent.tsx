@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import * as Blockly from 'blockly';
-import { generator } from './generator';
+import { generateBotCode } from './generator';
 import './blocks';
 
 interface BlocklyComponentProps {
@@ -41,7 +41,7 @@ const BlocklyComponent: React.FC<BlocklyComponentProps> = ({ onCodeChange }) => 
       });
 
       workspace.current.addChangeListener(() => {
-        const code = generator.workspaceToCode(workspace.current!);
+        const code = generateBotCode(workspace.current!);
         if (onCodeChange) {
           onCodeChange(code);
         }
